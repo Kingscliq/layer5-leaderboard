@@ -1,6 +1,5 @@
 // import { close } from '@assets/icons';
 import React, { ReactNode } from 'react';
-import Image from '../Image';
 import Section from '../Section';
 
 interface ModalProps {

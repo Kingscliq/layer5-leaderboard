@@ -1,135 +1,283 @@
-import React, { SetStateAction, useMemo } from 'react';
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
-import Pagination from '../Pagination';
-import Section from '../Section';
-import BtnLoader from '../Button/loader';
-import Paragraph from '../Text/Paragraph';
+import React from 'react';
 
-interface TableProps {
-  columns: any;
-  data: any;
-  currentPage?: number;
-  setCurrentPage?: React.Dispatch<SetStateAction<number>>;
-  total?: number;
-  loading?: boolean;
-  noData?: string;
-  limit?: number;
+import {
+  Column,
+  Table as ReactTable,
+  PaginationState,
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  ColumnDef,
+  OnChangeFn,
+  flexRender,
+} from '@tanstack/react-table';
+import { Person, makeData } from '@utils/makeData';
+
+// import { makeData, Person } from './makeData';
+
+function TableComponent() {
+  const rerender = React.useReducer(() => ({}), {})[1];
+
+  const columns = React.useMemo<ColumnDef<Person>[]>(
+    () => [
+      {
+        header: 'Name',
+        footer: (props) => props.column.id,
+        columns: [
+          {
+            accessorKey: 'firstName',
+            cell: (info) => info.getValue(),
+            footer: (props) => props.column.id,
+          },
+          {
+            accessorFn: (row) => row.lastName,
+            id: 'lastName',
+            cell: (info) => info.getValue(),
+            header: () => <span>Last Name</span>,
+            footer: (props) => props.column.id,
+          },
+        ],
+      },
+      {
+        header: 'Info',
+        footer: (props) => props.column.id,
+        columns: [
+          {
+            accessorKey: 'age',
+            header: () => 'Age',
+            footer: (props) => props.column.id,
+          },
+          {
+            header: 'More Info',
+            columns: [
+              {
+                accessorKey: 'visits',
+                header: () => <span>Visits</span>,
+                footer: (props) => props.column.id,
+              },
+              {
+                accessorKey: 'status',
+                header: 'Status',
+                footer: (props) => props.column.id,
+              },
+              {
+                accessorKey: 'progress',
+                header: 'Profile Progress',
+                footer: (props) => props.column.id,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  const [data, setData] = React.useState(() => makeData(100000));
+  const refreshData = () => setData(() => makeData(100000));
+
+  return (
+    <>
+      <Table
+        {...{
+          data,
+          columns,
+        }}
+      />
+      <hr />
+      <div>
+        <button onClick={() => rerender()}>Force Rerender</button>
+      </div>
+      <div>
+        <button onClick={() => refreshData()}>Refresh Data</button>
+      </div>
+    </>
+  );
 }
 
-const Table = ({
-  columns,
+function Table({
   data,
-  currentPage,
-  setCurrentPage,
-  total,
-  loading,
-  noData,
-  limit,
-}: TableProps) => {
+  columns,
+}: {
+  data: Person[];
+  columns: ColumnDef<Person>[];
+}) {
   const table = useReactTable({
     data,
     columns,
+    // Pipeline
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    //
+    debugTable: true,
   });
 
-  const _totalPage = useMemo(
-    () => total && Math.ceil(total / limit!),
-    [limit, total]
-  );
-
   return (
-    <section>
-      <article className="flex flex-col border border-[#E6E6E6] rounded-xl">
-        <div className="overflow-x-auto sm:-mx-6 lg:-mx-8 ">
-          <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
-            <table className="min-w-full bg-white sm:px-6 lg:px-8 h-auto overflow-y-scroll relative">
-              <thead className="bg-[#F3F4F6]">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr
-                    key={headerGroup.id}
-                    className="w-full border-y border-light"
-                  >
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        className="text-left text-xs text-dark font-semibold uppercase whitespace-nowrap py-5 px-5"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="bg-white">
-                {!loading &&
-                  table?.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className={`relative border-y border-light text-dark ${
-                        Number(row?.id) % 2 ? 'bg-neutral-accorion' : ''
-                      }`}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          className="text-sm font-normal capitalize whitespace-nowrap py-[14px] px-5"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-            {loading && (
-              <Section className="h-64 w-full flex items-center justify-center">
-                <Section>
-                  <BtnLoader />
-                </Section>
-              </Section>
-            )}
-            {!loading && data.length === 0 && (
-              <Section className="h-64 w-full flex items-center justify-center">
-                <Paragraph className="text-gray-400">
-                  {noData || 'Oops! No Data to Display'}
-                </Paragraph>
-              </Section>
-            )}
-          </div>
-        </div>
-      </article>
-
-      {/* pagination */}
-      <article className="w-full pt-8 pb-6 px-6 flex items-center justify-between">
-        {total && (
-          <div className="text-sm text-muted">
-            {/* Total of {total} records */}
-            Showing {data?.length} out of {total} records
-          </div>
-        )}
-
-        {total && (
-          <Pagination
-            total={_totalPage!}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
+    <div className="p-2">
+      <div className="h-2" />
+      <table>
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <th key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder ? null : (
+                      <div>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {header.column.getCanFilter() ? (
+                          <div>
+                            <Filter column={header.column} table={table} />
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+                  </th>
+                );
+              })}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => {
+            return (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => {
+                  return (
+                    <td key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className="h-2" />
+      <div className="flex items-center gap-2">
+        <button
+          className="border rounded p-1"
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+        >
+          {'<<'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          {'<'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          {'>'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          disabled={!table.getCanNextPage()}
+        >
+          {'>>'}
+        </button>
+        <span className="flex items-center gap-1">
+          <div>Page</div>
+          <strong>
+            {table.getState().pagination.pageIndex + 1} of{' '}
+            {table.getPageCount()}
+          </strong>
+        </span>
+        <span className="flex items-center gap-1">
+          | Go to page:
+          <input
+            type="number"
+            defaultValue={table.getState().pagination.pageIndex + 1}
+            onChange={(e) => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              table.setPageIndex(page);
+            }}
+            className="border p-1 rounded w-16"
           />
-        )}
-      </article>
-    </section>
+        </span>
+        <select
+          value={table.getState().pagination.pageSize}
+          onChange={(e) => {
+            table.setPageSize(Number(e.target.value));
+          }}
+        >
+          {[10, 20, 30, 40, 50].map((pageSize) => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>{table.getRowModel().rows.length} Rows</div>
+      {/* <pre>{JSON.stringify(table.getState().pagination, null, 2)}</pre> */}
+    </div>
   );
-};
+}
+function Filter({
+  column,
+  table,
+}: {
+  column: Column<any, any>;
+  table: ReactTable<any>;
+}) {
+  const firstValue = table
+    .getPreFilteredRowModel()
+    .flatRows[0]?.getValue(column.id);
 
-export default Table;
+  const columnFilterValue = column.getFilterValue();
+
+  return typeof firstValue === 'number' ? (
+    <div className="flex space-x-2">
+      <input
+        type="number"
+        value={(columnFilterValue as [number, number])?.[0] ?? ''}
+        onChange={(e) =>
+          column.setFilterValue((old: [number, number]) => [
+            e.target.value,
+            old?.[1],
+          ])
+        }
+        placeholder={`Min`}
+        className="w-24 border shadow rounded"
+      />
+      <input
+        type="number"
+        value={(columnFilterValue as [number, number])?.[1] ?? ''}
+        onChange={(e) =>
+          column.setFilterValue((old: [number, number]) => [
+            old?.[0],
+            e.target.value,
+          ])
+        }
+        placeholder={`Max`}
+        className="w-24 border shadow rounded"
+      />
+    </div>
+  ) : (
+    <input
+      type="text"
+      value={(columnFilterValue ?? '') as string}
+      onChange={(e) => column.setFilterValue(e.target.value)}
+      placeholder={`Search...`}
+      className="w-36 border shadow rounded"
+    />
+  );
+}
+
+export default TableComponent;
