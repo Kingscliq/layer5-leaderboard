@@ -12,6 +12,7 @@ module.exports = {
         grey: '#50596E',
         dark: '#333',
         light: '#f4f4f4',
+        primary: '#00B39F',
         white: '#ffffff',
         info: '#E3FEFF',
         success: '#006644',

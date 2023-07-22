@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   Column,
@@ -11,86 +11,83 @@ import {
   ColumnDef,
   OnChangeFn,
   flexRender,
+  createColumnHelper,
 } from '@tanstack/react-table';
 import { Person, makeData } from '@utils/makeData';
 
-// import { makeData, Person } from './makeData';
-
 function TableComponent() {
   const rerender = React.useReducer(() => ({}), {})[1];
-
+  const defaultData: Person[] = [
+    {
+      firstName: 'tanner',
+      lastName: 'linsley',
+      age: 24,
+      visits: 100,
+      status: 'In Relationship',
+      progress: 50,
+    },
+    {
+      firstName: 'tandy',
+      lastName: 'miller',
+      age: 40,
+      visits: 40,
+      status: 'Single',
+      progress: 80,
+    },
+    {
+      firstName: 'joe',
+      lastName: 'dirte',
+      age: 45,
+      visits: 20,
+      status: 'Complicated',
+      progress: 10,
+    },
+  ];
   const columns = React.useMemo<ColumnDef<Person>[]>(
     () => [
       {
-        header: 'Name',
-        footer: (props) => props.column.id,
-        columns: [
-          {
-            accessorKey: 'firstName',
-            cell: (info) => info.getValue(),
-            footer: (props) => props.column.id,
-          },
-          {
-            accessorFn: (row) => row.lastName,
-            id: 'lastName',
-            cell: (info) => info.getValue(),
-            header: () => <span>Last Name</span>,
-            footer: (props) => props.column.id,
-          },
-        ],
+        header: 'FirstName',
+        accessorKey: 'firstName',
+        cell: (info) => info.getValue(),
       },
       {
-        header: 'Info',
-        footer: (props) => props.column.id,
-        columns: [
-          {
-            accessorKey: 'age',
-            header: () => 'Age',
-            footer: (props) => props.column.id,
-          },
-          {
-            header: 'More Info',
-            columns: [
-              {
-                accessorKey: 'visits',
-                header: () => <span>Visits</span>,
-                footer: (props) => props.column.id,
-              },
-              {
-                accessorKey: 'status',
-                header: 'Status',
-                footer: (props) => props.column.id,
-              },
-              {
-                accessorKey: 'progress',
-                header: 'Profile Progress',
-                footer: (props) => props.column.id,
-              },
-            ],
-          },
-        ],
+        header: 'LastName',
+        accessorKey: 'lastName',
+        cell: (info) => info.getValue(),
+      },
+      {
+        header: 'Age',
+        accessorKey: 'age',
+        cell: (info) => info.getValue(),
+      },
+      {
+        header: 'Visits',
+        accessorKey: 'visits',
+        cell: (info) => info.getValue(),
+      },
+      {
+        header: 'Status',
+        accessorKey: 'status',
+        cell: (info) => info.getValue(),
+      },
+      {
+        header: 'Progress',
+        accessorKey: 'progress',
+        cell: (info) => info.getValue(),
       },
     ],
     []
   );
 
-  const [data, setData] = React.useState(() => makeData(100000));
-  const refreshData = () => setData(() => makeData(100000));
+  // const [data, setData] = React.useState(() => makeData(100000));
+  // const refreshData = () => setData(() => makeData(100000));
 
   return (
     <>
-      <Table
-        {...{
-          data,
-          columns,
-        }}
-      />
+      <Table {...{ data: defaultData, columns }} />
       <hr />
       <div>
         <button onClick={() => rerender()}>Force Rerender</button>
-      </div>
-      <div>
-        <button onClick={() => refreshData()}>Refresh Data</button>
       </div>
     </>
   );
@@ -103,65 +100,99 @@ function Table({
   data: Person[];
   columns: ColumnDef<Person>[];
 }) {
+  const [globalFilter, setGlobalFilter] = useState<string>('');
   const table = useReactTable({
     data,
     columns,
-    // Pipeline
+    state: {
+      globalFilter,
+    },
+    onGlobalFilterChange: setGlobalFilter,
+
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    //
+
     debugTable: true,
   });
 
   return (
-    <div className="p-2">
-      <div className="h-2" />
-      <table>
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <th key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder ? null : (
-                      <div>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </th>
-                );
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => {
-            return (
-              <tr key={row.id}>
-                {row.getVisibleCells().map((cell) => {
+    <section>
+      <input
+        value={globalFilter ?? ''}
+        onChange={(event) => setGlobalFilter(event.target.value)}
+        className="p-2 font-lg shadow border border-block"
+        placeholder="Search..."
+      />
+      <article className="flex flex-col border border-[#E6E6E6] rounded-xl">
+        <div className="overflow-x-auto sm:-mx-6 lg:-mx-8 ">
+          <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+            <table className="min-w-full bg-white sm:px-6 lg:px-8 h-auto overflow-y-scroll relative">
+              <thead className="bg-[#F3F4F6]">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr
+                    key={headerGroup.id}
+                    className="w-full border-y border-light text-white bg-primary"
+                  >
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className="text-left text-xs text-white font-semibold uppercase whitespace-nowrap py-5 px-5"
+                        >
+                          {header.isPlaceholder ? null : (
+                            <div>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                              {/* {header.column.getCanFilter() ? (
+                                <div>
+                                  <Filter
+                                    column={header.column}
+                                    table={table}
+                                  />
+                                </div>
+                              ) : null} */}
+                            </div>
+                          )}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="bg-white">
+                {table.getRowModel().rows.map((row) => {
                   return (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
+                    <tr
+                      key={row.id}
+                      className={`relative border-y border-light text-dark ${
+                        Number(row?.id) % 2 ? 'bg-neutral-accorion' : ''
+                      }`}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <td
+                            key={cell.id}
+                            className="text-sm font-normal capitalize whitespace-nowrap py-[14px] px-5"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
                   );
                 })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
       <div className="h-2" />
       <div className="flex items-center gap-2">
         <button
@@ -226,7 +257,7 @@ function Table({
       </div>
       <div>{table.getRowModel().rows.length} Rows</div>
       {/* <pre>{JSON.stringify(table.getState().pagination, null, 2)}</pre> */}
-    </div>
+    </section>
   );
 }
 function Filter({
@@ -242,34 +273,7 @@ function Filter({
 
   const columnFilterValue = column.getFilterValue();
 
-  return typeof firstValue === 'number' ? (
-    <div className="flex space-x-2">
-      <input
-        type="number"
-        value={(columnFilterValue as [number, number])?.[0] ?? ''}
-        onChange={(e) =>
-          column.setFilterValue((old: [number, number]) => [
-            e.target.value,
-            old?.[1],
-          ])
-        }
-        placeholder={`Min`}
-        className="w-24 border shadow rounded"
-      />
-      <input
-        type="number"
-        value={(columnFilterValue as [number, number])?.[1] ?? ''}
-        onChange={(e) =>
-          column.setFilterValue((old: [number, number]) => [
-            old?.[0],
-            e.target.value,
-          ])
-        }
-        placeholder={`Max`}
-        className="w-24 border shadow rounded"
-      />
-    </div>
-  ) : (
+  return (
     <input
       type="text"
       value={(columnFilterValue ?? '') as string}
@@ -278,6 +282,42 @@ function Filter({
       className="w-36 border shadow rounded"
     />
   );
+  // return typeof firstValue === 'number' ? (
+  //   <div className="flex space-x-2">
+  //     <input
+  //       type="number"
+  //       value={(columnFilterValue as [number, number])?.[0] ?? ''}
+  //       onChange={(e) =>
+  //         column.setFilterValue((old: [number, number]) => [
+  //           e.target.value,
+  //           old?.[1],
+  //         ])
+  //       }
+  //       placeholder={`Min`}
+  //       className="w-24 border shadow rounded"
+  //     />
+  //     <input
+  //       type="number"
+  //       value={(columnFilterValue as [number, number])?.[1] ?? ''}
+  //       onChange={(e) =>
+  //         column.setFilterValue((old: [number, number]) => [
+  //           old?.[0],
+  //           e.target.value,
+  //         ])
+  //       }
+  //       placeholder={`Max`}
+  //       className="w-24 border shadow rounded"
+  //     />
+  //   </div>
+  // ) : (
+  //   <input
+  //     type="text"
+  //     value={(columnFilterValue ?? '') as string}
+  //     onChange={(e) => column.setFilterValue(e.target.value)}
+  //     placeholder={`Search...`}
+  //     className="w-36 border shadow rounded"
+  //   />
+  // );
 }
 
 export default TableComponent;

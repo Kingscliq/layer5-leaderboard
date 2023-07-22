@@ -83,7 +83,7 @@ const UsersTable = ({ users, loading }: any) => {
         </Link> */}
       </Section>
       <Section>
-        <Table columns={columns} data={users} loading={loading} />
+        <Table />
       </Section>
     </Section>
   );
