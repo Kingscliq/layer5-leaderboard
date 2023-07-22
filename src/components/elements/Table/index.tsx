@@ -3,88 +3,23 @@ import React, { useState } from 'react';
 import {
   Column,
   Table as ReactTable,
-  PaginationState,
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   ColumnDef,
-  OnChangeFn,
   flexRender,
-  createColumnHelper,
 } from '@tanstack/react-table';
-import { Person, makeData } from '@utils/makeData';
+
+import { LeaderBoardData } from '@/types/index';
+import { leaderB } from '@utils/DummyData';
 
 function TableComponent() {
   const rerender = React.useReducer(() => ({}), {})[1];
-  const defaultData: Person[] = [
-    {
-      firstName: 'tanner',
-      lastName: 'linsley',
-      age: 24,
-      visits: 100,
-      status: 'In Relationship',
-      progress: 50,
-    },
-    {
-      firstName: 'tandy',
-      lastName: 'miller',
-      age: 40,
-      visits: 40,
-      status: 'Single',
-      progress: 80,
-    },
-    {
-      firstName: 'joe',
-      lastName: 'dirte',
-      age: 45,
-      visits: 20,
-      status: 'Complicated',
-      progress: 10,
-    },
-  ];
-  const columns = React.useMemo<ColumnDef<Person>[]>(
-    () => [
-      {
-        header: 'FirstName',
-        accessorKey: 'firstName',
-        cell: (info) => info.getValue(),
-      },
-      {
-        header: 'LastName',
-        accessorKey: 'lastName',
-        cell: (info) => info.getValue(),
-      },
-      {
-        header: 'Age',
-        accessorKey: 'age',
-        cell: (info) => info.getValue(),
-      },
-      {
-        header: 'Visits',
-        accessorKey: 'visits',
-        cell: (info) => info.getValue(),
-      },
-      {
-        header: 'Status',
-        accessorKey: 'status',
-        cell: (info) => info.getValue(),
-      },
-      {
-        header: 'Progress',
-        accessorKey: 'progress',
-        cell: (info) => info.getValue(),
-      },
-    ],
-    []
-  );
-
-  // const [data, setData] = React.useState(() => makeData(100000));
-  // const refreshData = () => setData(() => makeData(100000));
 
   return (
     <>
-      <Table {...{ data: defaultData, columns }} />
+      <Table {...{ data: leaderB, columns: leadColumns }} />
       <hr />
       <div>
         <button onClick={() => rerender()}>Force Rerender</button>
@@ -97,8 +32,8 @@ function Table({
   data,
   columns,
 }: {
-  data: Person[];
-  columns: ColumnDef<Person>[];
+  data: LeaderBoardData[];
+  columns: ColumnDef<LeaderBoardData>[];
 }) {
   const [globalFilter, setGlobalFilter] = useState<string>('');
   const table = useReactTable({
