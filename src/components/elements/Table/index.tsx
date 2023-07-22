@@ -12,28 +12,35 @@ import {
 } from '@tanstack/react-table';
 
 import { LeaderBoardData } from '@/types/index';
-import { leaderB } from '@utils/DummyData';
+import Section from '../Section';
+import BtnLoader from '../Button/loader';
+import Paragraph from '../Text/Paragraph';
 
-function TableComponent() {
-  const rerender = React.useReducer(() => ({}), {})[1];
-
-  return (
-    <>
-      <Table {...{ data: leaderB, columns: leadColumns }} />
-      <hr />
-      <div>
-        <button onClick={() => rerender()}>Force Rerender</button>
-      </div>
-    </>
-  );
+interface TableProps {
+  data: any;
+  columns: any;
+  loading: boolean;
+  noData?: string;
 }
+const TableComponent: React.FC<TableProps> = ({
+  data,
+  columns,
+  loading,
+  noData,
+}) => {
+  return <Table {...{ data, columns }} loading={loading} noData={noData} />;
+};
 
 function Table({
   data,
   columns,
+  loading,
+  noData,
 }: {
   data: LeaderBoardData[];
   columns: ColumnDef<LeaderBoardData>[];
+  loading: boolean;
+  noData?: string;
 }) {
   const [globalFilter, setGlobalFilter] = useState<string>('');
   const table = useReactTable({
@@ -82,14 +89,6 @@ function Table({
                                 header.column.columnDef.header,
                                 header.getContext()
                               )}
-                              {/* {header.column.getCanFilter() ? (
-                                <div>
-                                  <Filter
-                                    column={header.column}
-                                    table={table}
-                                  />
-                                </div>
-                              ) : null} */}
                             </div>
                           )}
                         </th>
@@ -125,6 +124,20 @@ function Table({
                 })}
               </tbody>
             </table>
+            {loading && (
+              <Section className="h-64 w-full flex items-center justify-center">
+                <Section>
+                  <BtnLoader />
+                </Section>
+              </Section>
+            )}
+            {!loading && data?.length === 0 && (
+              <Section className="h-64 w-full flex items-center justify-center">
+                <Paragraph className="text-gray-400">
+                  {noData || 'Oops! No Data to Display'}
+                </Paragraph>
+              </Section>
+            )}
           </div>
         </div>
       </article>

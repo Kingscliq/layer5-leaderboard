@@ -8,9 +8,7 @@ import { toast } from 'react-toastify';
 export const useFetchLeaderBoard = () => {
   const fetchDashboardMetrics = async () => {
     try {
-      const response = await axios.get(
-        `/directory_items.json?order=likes_received&period=weekly`
-      );
+      const response = await axios.get(`directory_items.json?order=likes_received&period=weekly`);
       return response.data;
     } catch (error) {
       throw error;
