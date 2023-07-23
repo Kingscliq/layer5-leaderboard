@@ -1,4 +1,3 @@
-import Table from '@components/elements/Table';
 const Test = () => {
   return (
     <div className="bg-white p-8">
