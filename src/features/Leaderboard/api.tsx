@@ -8,11 +8,21 @@ import { toast } from 'react-toastify';
 export const useFetchLeaderBoard = () => {
   const fetchDashboardMetrics = async () => {
     try {
-      const response = await axios.get(`directory_items.json?order=likes_received&period=weekly`);
+      const response = await axios.get(
+        `directory_items.json?order=likes_received&period=weekly`
+      );
       return response.data;
     } catch (error) {
       throw error;
     }
+  };
+  const fetchLeaderBoard = async () => {
+    fetch(
+      `https://discuss.layer5.io/directory_items.json?order=likes_received&period=weekly`
+    )
+      .then((res) => res.json())
+      .then((data) => data.data)
+      .catch((error) => console.log(error));
   };
 
   const leadColumns = React.useMemo<ColumnDef<LeaderBoardData>[]>(
@@ -63,8 +73,8 @@ export const useFetchLeaderBoard = () => {
   );
 
   const { data: leaderBoard, isFetching: loadingLeaderBoard } = useQuery({
-    queryKey: ['dashboardMetrices'],
-    queryFn: fetchDashboardMetrics,
+    queryKey: ['leader-board'],
+    queryFn: fetchLeaderBoard,
     onError: (err) =>
       toast.error(
         typeof err === 'string'
