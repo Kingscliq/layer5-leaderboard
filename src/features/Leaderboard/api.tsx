@@ -9,16 +9,26 @@ export const useFetchLeaderBoard = () => {
   const fetchDashboardMetrics = async () => {
     try {
       const response = await axios.get(
-        `directory_items.json?order=likes_received&period=weekly`
+        `directory_items.json/?order=likes_received&period=weekly`
       );
       return response.data;
     } catch (error) {
       throw error;
     }
   };
+
+  const config = {
+    headers: {
+      // Accept: 'application/json',
+      'Api-Key':
+        '0deda792d73d76ec3d59b2e7d7adbfeadff0e78d3ba625afb1f828921de51c6e',
+      'Api-Username': 'Lee',
+    },
+  };
   const fetchLeaderBoard = async () => {
     fetch(
-      `https://discuss.layer5.io/directory_items.json?order=likes_received&period=weekly`
+      'https://discuss.layer5.io/directory_items.json/?order=likes_received&period=weekly',
+      config
     )
       .then((res) => res.json())
       .then((data) => data.data)
