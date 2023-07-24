@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import {
   Column,
@@ -21,6 +21,14 @@ interface TableProps {
   columns: any;
   loading: boolean;
   noData?: string;
+}
+
+interface PaginationButtonProps {
+  loading: boolean;
+  children: ReactNode;
+  disabled: boolean;
+  className: string;
+  onClick: () => void;
 }
 const TableComponent: React.FC<TableProps> = ({
   data,
@@ -56,6 +64,25 @@ function Table({
     debugTable: true,
   });
 
+  const Button: React.FC<PaginationButtonProps> = ({
+    loading,
+    children,
+    disabled,
+    className,
+    onClick,
+  }) => {
+    return (
+      <button
+        className={`${className} border rounded p-1 text-xs ${
+          disabled ? 'bg-primary-100 opacity-60' : 'bg-primary text-white'
+        } `}
+        disabled={disabled || loading}
+        onClick={onClick}
+      >
+        {children}
+      </button>
+    );
+  };
   return (
     <section>
       <input
@@ -102,7 +129,7 @@ function Table({
                       <tr
                         key={row.id}
                         className={`relative border-y border-light text-dark ${
-                          Number(row?.id) % 2 ? 'bg-neutral-accorion' : ''
+                          Number(row?.id) % 2 ? 'bg-primary-100' : ''
                         }`}
                       >
                         {row?.getVisibleCells().map((cell) => {
@@ -141,130 +168,78 @@ function Table({
         </div>
       </article>
       <div className="h-2" />
-      <div className="flex items-center gap-2">
-        <button
-          className="border rounded p-1"
-          onClick={() => table?.setPageIndex(0)}
-          disabled={!table?.getCanPreviousPage()}
-        >
-          {'<<'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table?.previousPage()}
-          disabled={!table?.getCanPreviousPage()}
-        >
-          {'<'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table?.nextPage()}
-          disabled={!table?.getCanNextPage()}
-        >
-          {'>'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table?.setPageIndex(table?.getPageCount() - 1)}
-          disabled={!table?.getCanNextPage()}
-        >
-          {'>>'}
-        </button>
-        <span className="flex items-center gap-1">
-          <div>Page</div>
-          <strong>
-            {table?.getState().pagination.pageIndex + 1} of{' '}
-            {table?.getPageCount()}
-          </strong>
-        </span>
-        <span className="flex items-center gap-1">
-          | Go to page:
-          <input
-            type="number"
-            defaultValue={table?.getState().pagination.pageIndex + 1}
+
+      <Section className="flex items-center justify-center text-sx text-gray-600">
+        <div className="flex items-center gap-2">
+          <Button
+            className=""
+            onClick={() => table?.setPageIndex(0)}
+            disabled={!table?.getCanPreviousPage()}
+            loading={false}
+          >
+            {'<<'}
+          </Button>
+          <Button
+            className=""
+            onClick={() => table?.previousPage()}
+            disabled={!table?.getCanPreviousPage()}
+            loading={false}
+          >
+            &larr; Prev
+          </Button>
+          <Button
+            className=""
+            onClick={() => table?.nextPage()}
+            disabled={!table?.getCanNextPage()}
+            loading={false}
+          >
+            Next &rarr;
+          </Button>
+
+          <Button
+            className=""
+            onClick={() => table?.setPageIndex(table?.getPageCount() - 1)}
+            disabled={!table?.getCanNextPage()}
+            loading={false}
+          >
+            {'>>'}
+          </Button>
+
+          <span className="flex items-center gap-1 text-xs">
+            <div>Page</div>
+            <strong>
+              {table?.getState().pagination.pageIndex + 1} of{' '}
+              {table?.getPageCount()}
+            </strong>
+          </span>
+          <span className="flex items-center gap-1 text-xs">
+            | Go to page:
+            <input
+              type="number"
+              defaultValue={table?.getState().pagination.pageIndex + 1}
+              onChange={(e) => {
+                const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                table.setPageIndex(page);
+              }}
+              className="border p-1 rounded w-16"
+            />
+          </span>
+          <select
+            value={table?.getState().pagination.pageSize}
             onChange={(e) => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0;
-              table.setPageIndex(page);
+              table?.setPageSize(Number(e.target.value));
             }}
-            className="border p-1 rounded w-16"
-          />
-        </span>
-        <select
-          value={table?.getState().pagination.pageSize}
-          onChange={(e) => {
-            table?.setPageSize(Number(e.target.value));
-          }}
-        >
-          {[10, 20, 30, 40, 50].map((pageSize) => (
-            <option key={pageSize} value={pageSize}>
-              Show {pageSize}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>{table.getRowModel().rows.length} Rows</div>
-      {/* <pre>{JSON.stringify(table.getState().pagination, null, 2)}</pre> */}
+          >
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <option className="text-xs" key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Section>
     </section>
   );
 }
-// function Filter({
-//   column,
-//   table,
-// }: {
-//   column: Column<any, any>;
-//   table: ReactTable<any>;
-// }) {
-//   const firstValue = table
-//     .getPreFilteredRowModel()
-//     .flatRows[0]?.getValue(column.id);
-
-//   const columnFilterValue = column.getFilterValue();
-
-//   return (
-//     <input
-//       type="text"
-//       value={(columnFilterValue ?? '') as string}
-//       onChange={(e) => column.setFilterValue(e.target.value)}
-//       placeholder={`Search...`}
-//       className="w-36 border shadow rounded"
-//     />
-//   );
-// return typeof firstValue === 'number' ? (
-//   <div className="flex space-x-2">
-//     <input
-//       type="number"
-//       value={(columnFilterValue as [number, number])?.[0] ?? ''}
-//       onChange={(e) =>
-//         column.setFilterValue((old: [number, number]) => [
-//           e.target.value,
-//           old?.[1],
-//         ])
-//       }
-//       placeholder={`Min`}
-//       className="w-24 border shadow rounded"
-//     />
-//     <input
-//       type="number"
-//       value={(columnFilterValue as [number, number])?.[1] ?? ''}
-//       onChange={(e) =>
-//         column.setFilterValue((old: [number, number]) => [
-//           old?.[0],
-//           e.target.value,
-//         ])
-//       }
-//       placeholder={`Max`}
-//       className="w-24 border shadow rounded"
-//     />
-//   </div>
-// ) : (
-//   <input
-//     type="text"
-//     value={(columnFilterValue ?? '') as string}
-//     onChange={(e) => column.setFilterValue(e.target.value)}
-//     placeholder={`Search...`}
-//     className="w-36 border shadow rounded"
-//   />
-// );
-// }
 
 export default TableComponent;

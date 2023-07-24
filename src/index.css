@@ -21,7 +21,7 @@ a {
   text-decoration: none;
   background-color: rgba(240, 255, 244, 0.402);
   /* color: #a4ffb9; */
-  color: #20282e;
+  color: #333;
 }
 
 @tailwind base;
