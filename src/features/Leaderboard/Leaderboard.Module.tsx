@@ -9,12 +9,13 @@ const HomeModule = () => {
   console.log(leaderBoard);
   return (
     <Section>
-      hello
-      {/* <TableComponent
-        data={leaderBoard}
-        columns={leadColumns}
-        loading={loadingLeaderBoard}
-      /> */}
+      {leaderBoard?.directory_items.length > 0 && (
+        <TableComponent
+          data={leaderBoard?.directory_items}
+          columns={leadColumns}
+          loading={loadingLeaderBoard}
+        />
+      )}
     </Section>
   );
 };
