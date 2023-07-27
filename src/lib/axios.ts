@@ -1,6 +1,9 @@
 import Axios from 'axios';
 
-export const BASE_URL = 'https://discuss.layer5.io/';
+export const BASE_URL = process.env.BASE_URL;
 export const axios = Axios.create({
-  baseURL: '/',
+  baseURL: BASE_URL,
+  headers: {
+    'Cache-Control': 'no-cache',
+  },
 });
