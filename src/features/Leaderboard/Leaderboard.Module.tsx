@@ -18,7 +18,7 @@ const HomeModule = () => {
           </Section>
         </Section>
       )}
-      {leaderBoard?.directory_items.length > 0 && (
+      {leaderBoard?.directory_items?.length > 0 && (
         <TableComponent
           data={leaderBoard?.directory_items}
           columns={leadColumns}
