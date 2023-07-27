@@ -11,4 +11,5 @@ const proxy = (app: any) => {
   );
 };
 
+// "proxy": "https://discuss.layer5.io/directory_items.json"
 export default proxy;
