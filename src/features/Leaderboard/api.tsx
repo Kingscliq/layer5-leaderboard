@@ -1,4 +1,6 @@
 import { LeaderBoardData } from '@/types/index';
+import { bronze, gold, silver } from '@assets/icons';
+import Image from '@components/elements/Image';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { totalPoints } from '@utils/helpers';
@@ -25,7 +27,16 @@ export const useFetchLeaderBoard = () => {
         accessorKey: '',
         cell: (info) => {
           const value = info?.row?.index + 1;
-          return <span>{value}</span>;
+          const rank = ['', gold, silver, bronze];
+          return (
+            <span>
+              {[1, 2, 3].includes(value) ? (
+                <Image src={rank[value]} alt={'Rank'} />
+              ) : (
+                <p className="ml-4">{value}</p>
+              )}
+            </span>
+          );
         },
       },
       {
@@ -59,7 +70,7 @@ export const useFetchLeaderBoard = () => {
       },
       {
         header: 'Total Points',
-        accessorKey: 'solutions',
+        accessorKey: 'points',
         cell: (info) => {
           const { likes_received, post_count, solutions } = info?.row?.original;
           return (

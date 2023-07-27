@@ -17,6 +17,7 @@ interface TextFieldProps {
   inputClass?: string;
   disabled?: boolean;
   icon?: ReactNode;
+  leftIcon?: ReactNode;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
@@ -35,6 +36,7 @@ const TextField: React.FC<TextFieldProps> = ({
   props,
   disabled,
   icon,
+  leftIcon,
 }) => {
   return (
     <div className="w-full">
@@ -54,6 +56,7 @@ const TextField: React.FC<TextFieldProps> = ({
             }`,
           ].join(' ')}
         >
+          {leftIcon && <div className="cursor-pointer p-4">{leftIcon}</div>}
           <input
             type={type || 'text'}
             className={[
