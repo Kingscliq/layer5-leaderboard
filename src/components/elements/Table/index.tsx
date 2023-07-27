@@ -1,8 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 
 import {
-  Column,
-  Table as ReactTable,
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
